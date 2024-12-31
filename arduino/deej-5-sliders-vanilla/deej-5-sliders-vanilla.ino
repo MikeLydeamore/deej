@@ -1,5 +1,12 @@
-const int NUM_SLIDERS = 5;
-const int analogInputs[NUM_SLIDERS] = {A0, A1, A2, A3, A4};
+#include "MultiMap.h"
+enum PotentiometerType {
+  LINEAR,
+  LOGARITHMIC
+};
+
+const int NUM_SLIDERS = 2;
+const int analogInputs[NUM_SLIDERS] = {A0, A1};
+const PotentiometerType POTENTIOMETER_TYPE = LOGARITHMIC; //LINEAR OR LOGARITHMIC
 
 int analogSliderValues[NUM_SLIDERS];
 
@@ -14,13 +21,17 @@ void setup() {
 void loop() {
   updateSliderValues();
   sendSliderValues(); // Actually send data (all the time)
-  // printSliderValues(); // For debug
+  //printSliderValues(); // For debug
   delay(10);
 }
 
 void updateSliderValues() {
   for (int i = 0; i < NUM_SLIDERS; i++) {
-     analogSliderValues[i] = analogRead(analogInputs[i]);
+    if(POTENTIOMETER_TYPE == 1) {
+     analogSliderValues[i] = logarithmicToLinearValue(analogRead(analogInputs[i]));
+    } else {
+      analogSliderValues[i] = analogRead(analogInputs[i]);
+    }
   }
 }
 
@@ -49,4 +60,17 @@ void printSliderValues() {
       Serial.write("\n");
     }
   }
+}
+
+//int inputMap[]  = {0, 1, 4, 15, 27, 56, 83, 185, 308, 520, 720, 979, 1023};
+int outputMap[] = {0, 89, 178, 267, 356, 445, 534, 623, 712, 801, 890, 979, 1023};
+//int inputMap[] = {0, 1, 255, 511, 767, 1023};
+int inputMap[] = {0, 10, 30, 90, 250, 360, 510, 675, 775, 910, 990, 1010, 1023};
+
+int logarithmicToLinearValue(int logarithmicValue) {
+  int linearValue = multiMap<int>(logarithmicValue, inputMap, outputMap, 13);
+  //String logString = String(logarithmicValue) + String("|") + String(linearValue); // For testing the mapping to one or the other
+  //Serial.write(logString.c_str());
+  
+  return linearValue;
 }
